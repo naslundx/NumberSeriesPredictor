@@ -1,15 +1,29 @@
 #include "population.hpp"
 
-Population::Population(int size, std::vector<std::pair<double,double> >& input_data) {
+Population::Population(double probability_flip, double probability_mutation) {
+  mGenerationCount = 0;
+  mProbFlip = probability_flip;
+  mProbMutation = probability_mutation;
+}
+
+void Population::reset(int size) {
   mSize = size;
-  mInputData = input_data;
+  mGenerationCount = 0;
+
   const int genotype_length = 4*15;
 
+  mPopulation.clear();
+
   for (int i=0; i<mSize; i++) {
-    Genotype temp;
+    Genotype temp(mInputData);
     temp.randomize_content(genotype_length);
+    temp.setProbabilities(mProbFlip, mProbMutation);
     mPopulation.push_back(temp);
   }
+}
+
+void Population::add_data_point(double x, double y) {
+  mInputData.push_back(std::pair<double,double>(x,y));
 }
 
 Genotype Population::get_best_fit() {
@@ -17,7 +31,7 @@ Genotype Population::get_best_fit() {
   std::vector<Genotype>::iterator best;
 
   for (auto it = mPopulation.begin(); it != mPopulation.end(); ++it) {
-    if (it->fitness(mInputData) > max) {
+    if (it->fitness() > max) {
       best = it;
     }
   }
@@ -28,7 +42,7 @@ Genotype Population::get_best_fit() {
 double Population::get_total_fit() {
   double sum = 0.0;
   for (auto it = mPopulation.begin(); it != mPopulation.end(); ++it) {
-    sum += it->fitness(mInputData);
+    sum += it->fitness();
   }
   return sum;
 }
@@ -39,7 +53,7 @@ Genotype Population::select_copy_and_delete() {
   double counter = 0.0;
 
   for (auto it = mPopulation.begin(); it != mPopulation.end(); ++it) {
-    counter += it->fitness(mInputData);
+    counter += it->fitness();
     if (counter > frac) {
       Genotype temp = *it;
       mPopulation.erase(it);
@@ -53,8 +67,10 @@ Genotype Population::select_copy_and_delete() {
 }
 
 void Population::next_generation() {
+  mGenerationCount++;
   std::vector<Genotype> new_population;
 
+  // Advance in time
   for (int x=mPopulation.size()-1; x>=0; x-=2) {
     Genotype a = select_copy_and_delete();
     Genotype b = select_copy_and_delete();
@@ -70,4 +86,31 @@ void Population::next_generation() {
     Genotype temp = *it;
     mPopulation.push_back(temp);
   }
+}
+
+int Population::current_generation() {
+  return mGenerationCount;
+}
+
+Genotype Population::get_best_ever() {
+  // Check if any one of them are the best ever
+  Genotype best = get_best_fit();
+  if (mGenerationCount == 0) {
+    mBestEver = best;
+  }
+  else {
+    if (best.fitness() > mBestEver.fitness()) {
+      mBestEver = best;
+    }
+  }
+
+  // Hack to add the two best ever individuals back
+  if (mGenerationCount > 10) {
+    //mPopulation.pop_back();
+    //mPopulation.pop_back();
+    //mPopulation.push_back(mBestEver);
+    //mPopulation.push_back(mBestEver);
+  }
+
+  return mBestEver;
 }
