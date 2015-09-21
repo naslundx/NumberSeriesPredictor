@@ -1,7 +1,7 @@
 #include "population.hpp"
 
 Population::Population(int size, std::vector<std::pair<double,double> >& input_data) {
-  mSize = size;
+  mSize =2 size;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
