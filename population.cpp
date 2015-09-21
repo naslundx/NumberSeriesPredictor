@@ -10,7 +10,7 @@ void Population::reset(int size) {
   mSize = size;
   mGenerationCount = 0;
 
-  const int genotype_length = 4*15;
+  const int genotype_length = 3*15;
 
   mPopulation.clear();
 
