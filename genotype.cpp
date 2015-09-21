@@ -1,15 +1,6 @@
 #include "genotype.hpp"
 
-Genotype::Genotype() {
-  mFitness = -1;
-  setProbabilities(0,0);
-}
-
-Genotype::Genotype(std::vector<std::pair<double,double> > series) {
-  mFitness = -1;
-  setProbabilities(0,0);
-  mInputData = series;
-}
+Genotype::Genotype() {}
 
 void Genotype::randomize_content(const int length) {
   mData.clear();
@@ -30,19 +21,17 @@ std::string Genotype::formula(bool only_valid=true) {
   unsigned i=0;
 
   if (only_valid) {
-    char lastOp = '+';
     bool num=true;
 
     while (i<mData.size()) {
       char c = cexpr(i);
-      if (num && ((c >= '0' && c <= '9' && (c != '0' || lastOp != '/')) || c == 'x')) {
+      if (num && ((c >= '0' && c <= '9') || c == 'x')) {
         num = false;
         str += c;
       }
       else if (!num && (c == '+' || c == '-' || c == '*' || c == '/' || c=='^')) {
         num = true;
         str += c;
-        lastOp = c;
       }
 
       i += 4;
@@ -61,20 +50,16 @@ std::string Genotype::formula(bool only_valid=true) {
   return str;
 }
 
-double Genotype::fitness() {
-  if (mFitness < 0) {
-    double error=0.0;
-    for (auto it = mInputData.begin(); it != mInputData.end(); ++it) {
-        error += value_error(it->first, it->second);
-    }
-
-    if (error <= 0.00001)
-      mFitness = (std::numeric_limits<double>::max())/2.0;
-    else
-      mFitness = 1.0/error;
+double Genotype::fitness(std::vector<std::pair<double,double> >& series) {
+  double error=0.0;
+  for (auto it = series.begin(); it != series.end(); ++it) {
+      error += value_error(it->first, it->second);
   }
 
-  return mFitness;
+  if (error <= 0.01)
+    return (std::numeric_limits<double>::max())/2.0;
+  else
+    return 1.0/error;
 }
 
 std::ostream& operator<<(std::ostream& os, Genotype& dt) {
@@ -88,13 +73,11 @@ char& Genotype::operator[](int i) {
 }
 
 void Genotype::mutate() {
-  mFitness = -1;
-
   std::uniform_real_distribution<double> unif(0.0, 1.0);
   std::default_random_engine re;
 
   for (unsigned i=0; i < mData.size(); i++) {
-    if (unif(re) < mProbMutation) {
+    if (unif(re) < probability_mutation) {
        mData[i] = '0' ? mData[i]=='1' : '1';
     }
   }
@@ -104,7 +87,7 @@ Genotype& Genotype::operator%(Genotype& rhs) {
   std::uniform_real_distribution<double> unif(0.0, 1.0);
   std::default_random_engine re;
 
-  if (unif(re) < mProbFlip) {
+  if (unif(re) < probability_flip) {
     unsigned pos = rand() % mData.size();
 
     char temp;
@@ -209,9 +192,4 @@ double Genotype::penalty() {
   double penalty = 0.0;
   if (!has_x) penalty += 5.0;
   return penalty;
-}
-
-void Genotype::setProbabilities(double probability_flip, double probability_mutation) {
-  mProbFlip = probability_flip;
-  mProbMutation = probability_mutation;
 }

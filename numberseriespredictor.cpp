@@ -1,43 +1,38 @@
 #include "numberseriespredictor.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
   srand(time(NULL));
-  const double match_tolerance = 999999.9;
-
-  // Parse inputs
-  if (argc < 4) {
-    std::cout << "\nNot enough arguments. Specify population size (50), probability of flip (0.7) and probability of mutation (0.01).\n";
-    return 0;
-  }
-  const int population_size = atoi(argv[1]);
-  const double probability_flip = atof(argv[2]);
-  const double probability_mutation = atof(argv[3]);
-
-  // Keep track of the best
+  int generations = 0;
   Genotype best_ever_formula;
+  double best_ever_fit = 0.0;
+
+  // Input data (x^2 + 1)
+  std::vector<std::pair<double,double> > input_data;
+  input_data.push_back(std::pair<double,double>(1.0,2.0));
+  input_data.push_back(std::pair<double,double>(2.0,4.0));
+  input_data.push_back(std::pair<double,double>(3.0,6.0));
 
   // Setup the population (must be of even size)
-  Population population(probability_flip, probability_mutation);
-  population.add_data_point(1.0,4.0); // 3*x+1
-  population.add_data_point(2.0,7.0);
-  population.add_data_point(3.0,10.0);
-  population.reset(population_size);
+  const int population_size = 200;
+  Population population(population_size, input_data);
 
   // Loop until solution has been found
-  while (true) {
-    Genotype generation_best = population.get_best_fit();
-    Genotype best_ever = population.get_best_ever();
+  while (generations < 10000) {
+    std::cout << "\n\nCurrent generation: " << generations;
 
-    std::cout << "\n\nCurrent generation: " << population.current_generation();
-    std::cout << "\nBest in this generation: " << generation_best << " (fitness=" << generation_best.fitness() <<")\n";
-    std::cout << "\nBest ever: " << best_ever << " (fitness=" << best_ever.fitness() << ") [" << best_ever.formula(false) << "]\n";
-
-    if (best_ever.fitness() > match_tolerance) {
+    Genotype best = population.get_best_fit();
+    double best_fitness = best.fitness(input_data);
+    if (best_fitness > best_ever_fit) {
+      best_ever_fit = best_fitness;
+      best_ever_formula = best;
+    }
+    std::cout << "\nBest in this generation: " << best << " (fitness=" << best_fitness<<")\n";
+    std::cout << "\nBest ever: " << best_ever_formula << " (fitness=" << best_ever_fit << ")\n";
+    if (best_fitness > match_tolerance) {
       break;
     }
 
+    generations++;
     population.next_generation();
   }
-
-  return 0;
 }

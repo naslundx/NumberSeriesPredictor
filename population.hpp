@@ -7,14 +7,10 @@
 
 class Population {
 public:
-  Population(double probability_flip, double probability_mutation);
-  void reset(int size);
+  Population(int size, std::vector<std::pair<double,double> >& input_data);
   Genotype get_best_fit();
   double get_total_fit();
   void next_generation();
-  int current_generation();
-  Genotype get_best_ever();
-  void add_data_point(double x, double y);
 
 private:
   Genotype select_copy_and_delete();
@@ -22,9 +18,6 @@ private:
   std::vector<std::pair<double,double> > mInputData;
   std::vector<Genotype> mPopulation;
   int mSize;
-  int mGenerationCount;
-  double mProbFlip, mProbMutation;
-  Genotype mBestEver;
 };
 
 #endif
