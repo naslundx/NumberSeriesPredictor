@@ -4,9 +4,14 @@ Population::Population(int size, std::vector<std::pair<double,double> >& input_d
   mSize = size;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   mGenerationCount = 0;
 
   const int genotype_length = 3*15;
+=======
+  mInputData = input_data;
+  const int genotype_length = 4*15;
+>>>>>>> parent of 2de0501... Improved performance, uses CLI arguments
 =======
   mInputData = input_data;
   const int genotype_length = 4*15;
